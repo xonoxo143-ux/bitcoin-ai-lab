@@ -10,6 +10,12 @@ The current visible product is a mobile-first GitHub Pages preview at:
 https://xonoxo143-ux.github.io/bitcoin-ai-lab/
 ```
 
+The bridge/import test page is at:
+
+```text
+https://xonoxo143-ux.github.io/bitcoin-ai-lab/import.html
+```
+
 The preview runs fully in the browser from `docs/index.html`. It uses fake money and synthetic Bitcoin markets only.
 
 ## Core objective
@@ -51,6 +57,7 @@ Implemented in:
 
 ```text
 docs/index.html
+docs/import.html
 ```
 
 Current features:
@@ -99,6 +106,8 @@ Current features:
 - copy/export run JSON
 - load saved run
 - clear saved run
+- import bridge-format result JSON page
+- imported-result scoreboard/replay rendering
 - Android-readable compact layout
 
 ## Why Jesse is the base
@@ -133,7 +142,7 @@ Bitcoin AI Lab
 + replay/debug logs
 + local persistence
 + result JSON export
-+ later result JSON import
++ bridge-format result JSON import page
 + later Jesse bridge
 + much later guarded real exchange integration, if desired
 ```
@@ -247,15 +256,19 @@ Completed:
 - blocked live trading from bridge v1
 - defined v0.9 import-result prototype
 
-## Near-term milestones
-
 ### v0.9 — Import Result JSON
 
-- add browser-lab import area/button
-- paste bridge-format JSON
-- render imported results in the scoreboard/replay UI
-- prove the UI can display engine-agnostic results
-- keep import local-only
+Completed:
+
+- added `docs/import.html`
+- added local-only bridge-format JSON import page
+- added sample Jesse-style result JSON
+- renders imported scoreboard
+- renders imported equity/value chart
+- renders imported replay rows
+- stores latest imported result locally
+
+## Near-term milestones
 
 ### v1.0 — Jesse bridge prototype
 
@@ -263,7 +276,7 @@ Completed:
 - identify safe adapter points
 - create adapter outside Jesse internals if possible
 - export Jesse-style backtest result JSON
-- import that result into the browser lab
+- import that result into the browser lab/import page
 
 ### v1.1 — Meta Bot v2 / Ensemble Planning
 
@@ -285,6 +298,6 @@ Completed:
 
 ## Next best action
 
-Add v0.9 Import Result JSON to the browser preview.
+Start v1.0 Jesse bridge prototype planning/inspection.
 
-This proves the bridge contract before touching Jesse internals.
+The next concrete move is to inspect Jesse's backtest flow and identify a safe adapter point for exporting bridge-format JSON without touching live trading.
