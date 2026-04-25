@@ -1,154 +1,123 @@
-<div align="center">
-<br>
-<p align="center">
-<img src="assets/jesse-logo.png" alt="Jesse" height="72" />
-</p>
+# Bitcoin AI Lab
 
-<p align="center">
-Algo-trading was 😵‍💫, we made it 🤩
-</p>
-</div>
+Bitcoin AI Lab is a fake-money Bitcoin bot simulator and strategy lab.
 
-# Jesse
-[![PyPI](https://img.shields.io/pypi/v/jesse)](https://pypi.org/project/jesse)
-[![Downloads](https://pepy.tech/badge/jesse)](https://pepy.tech/project/jesse)
-[![Docker Pulls](https://img.shields.io/docker/pulls/salehmir/jesse)](https://hub.docker.com/r/salehmir/jesse)
-[![GitHub](https://img.shields.io/github/license/jesse-ai/jesse)](https://github.com/jesse-ai/jesse)
-[![coverage](https://codecov.io/gh/jesse-ai/jesse/graph/badge.svg)](https://codecov.io/gh/jesse-ai/jesse)
+The current public preview runs directly in the browser through GitHub Pages:
 
----
-
-Jesse is an advanced crypto trading framework that aims to **simplify** **researching** and defining **YOUR OWN trading strategies** for backtesting, optimizing, and live trading.
-
-## What is Jesse?
-Watch this video to get a quick overview of Jesse:
-
-[![Jesse Overview](https://img.youtube.com/vi/0EqN3OOqeJM/0.jpg)](https://www.youtube.com/watch?v=0EqN3OOqeJM)
-
-## Why Jesse?
-In short, Jesse is more **accurate** than other solutions, and way more **simple**. 
-In fact, it is so simple that in case you already know Python, you can get started today, in **matter of minutes**, instead of **weeks and months**. 
-
-## Key Features
-
-- 📝 **Simple Syntax**: Define both simple and advanced trading strategies with the simplest syntax in the fastest time.
-- 📊 **Comprehensive Indicator Library**: Access a complete library of technical indicators with easy-to-use syntax.
-- 📈 **Smart Ordering**: Supports market, limit, and stop orders, automatically choosing the best one for you.
-- ⏰ **Multiple Timeframes and Symbols**: Backtest and livetrade multiple timeframes and symbols simultaneously without look-ahead bias.
-- 🔒 **Self-Hosted and Privacy-First**: Designed with your privacy in mind, fully self-hosted to ensure your trading strategies and data remain secure.
-- 🛡️ **Risk Management**: Built-in helper functions for robust risk management.
-- 📋 **Metrics System**: A comprehensive metrics system to evaluate your trading strategy's performance.
-- 🔍 **Debug Mode**: Observe your strategy in action with a detailed debug mode.
-- 🔧 **Optimize Mode**: Fine-tune your strategies using AI, without needing a technical background.
-- 📈 **Leveraged and Short-Selling**: First-class support for leveraged trading and short-selling.
-- 🔀 **Partial Fills**: Supports entering and exiting positions in multiple orders, allowing for greater flexibility.
-- 🔔 **Advanced Alerts**: Create real-time alerts within your strategies for effective monitoring.
-- 🤖 **JesseGPT**: Jesse has its own GPT, JesseGPT, that can help you write strategies, optimize them, debug them, and much more.
-- 🔧 **Built-in Code Editor**: Write, edit, and debug your strategies with a built-in code editor.
-- 🎲 **Monte Carlo Analysis**: Stress-test your strategies with trade-order shuffling and candles-based simulations to distinguish skill from luck and guard against overfitting.
-- 🧠 **Machine Learning**: A built-in ML pipeline — gather labelled training data from backtests, train scikit-learn models (binary, multiclass, or regression), and deploy predictions directly inside your strategies.
-- 📺 **Youtube Channel**: Jesse has a Youtube channel with screencast tutorials that go through example strategies step by step.
-
-## Dive Deeper into Jesse's Capabilities
-
-### Stupid Simple
-Craft complex trading strategies with remarkably simple Python. Access 300+ indicators, multi-symbol/timeframe support, spot/futures trading, partial fills, and risk management tools. Focus on logic, not boilerplate.
-
-```python
-class GoldenCross(Strategy):
-    def should_long(self):
-        # go long when the EMA 8 is above the EMA 21
-        short_ema = ta.ema(self.candles, 8)
-        long_ema = ta.ema(self.candles, 21)
-        return short_ema > long_ema
-
-    def go_long(self):
-        entry_price = self.price - 10        # limit buy order at $10 below the current price
-        qty = utils.size_to_qty(self.balance*0.05, entry_price) # spend only 5% of my total capital
-        self.buy = qty, entry_price                 # submit entry order
-        self.take_profit = qty, entry_price*1.2  # take profit at 20% above the entry price
-        self.stop_loss = qty, entry_price*0.9   # stop loss at 10% below the entry price
+```text
+https://xonoxo143-ux.github.io/bitcoin-ai-lab/
 ```
 
-### Backtest
-Execute highly accurate and fast backtests without look-ahead bias. Utilize debugging logs, interactive charts with indicator support, and detailed performance metrics to validate your strategies thoroughly.
+## Current status
 
-![Backtest](https://raw.githubusercontent.com/jesse-ai/storage/refs/heads/master/backtest.gif)
+This repository is a fork of Jesse. It is being repurposed into Bitcoin AI Lab.
 
-### Live/Paper Trading
-Deploy strategies live with robust monitoring tools. Supports paper trading, multiple accounts, real-time logs & notifications (Telegram, Slack, Discord), interactive charts, spot/futures, DEX, and a built-in code editor.
+Right now, the visible product is a static mobile-first browser preview in `docs/index.html`. It does not connect to an exchange, does not place real trades, and does not use real money.
 
-![Live/Paper Trading](https://raw.githubusercontent.com/jesse-ai/storage/refs/heads/master/live.gif)
+The original Jesse codebase remains in place as the deeper trading-framework foundation/reference for later backtesting, strategy, metrics, optimization, Monte Carlo, machine-learning, and possible paper-trading integration.
 
-### Benchmark
-Accelerate research using the benchmark feature. Run batch backtests, compare across timeframes, symbols, and strategies. Filter and sort results by key performance metrics for efficient analysis.
+## What works now
 
-![Benchmark](https://raw.githubusercontent.com/jesse-ai/storage/refs/heads/master/benchmark.gif)
+The GitHub Pages preview currently includes:
 
-### AI
-Leverage our AI assistant even with limited Python knowledge. Get help writing and improving strategies, implementing ideas, debugging, optimizing, and understanding code. Your personal AI quant.
+- synthetic Bitcoin market generation
+- selectable market scenarios: mixed, bull, bear, chop, crash
+- selectable bots: trend bot, buy and hold, dip buyer, random bot
+- fake starting cash
+- trading fee simulation
+- final value
+- return percentage
+- max drawdown
+- trade count
+- buy-and-hold comparison
+- simple risk verdict
+- chart
+- replay/debug table
 
-![AI](https://raw.githubusercontent.com/jesse-ai/storage/refs/heads/master/gpt.gif)
+## What this is not
 
-### Monte Carlo Analysis
-Stress-test your strategies beyond a single historical path. Jesse's Monte Carlo mode runs hundreds of simulations using **trade-order shuffling** (tests whether trade timing drove your results) and **candles-based** (tests robustness under slightly different market conditions) methods. Use it to distinguish skill from luck, understand the range of outcomes you can realistically expect, and catch overfitting early.
+Bitcoin AI Lab is not financial advice.
 
-### Machine Learning
-Jesse includes a complete, end-to-end ML pipeline built for trading strategies:
+Bitcoin AI Lab is not a guaranteed-profit system.
 
-1. **Gather data** — run a backtest in gather mode; call `record_features({...})` at each signal bar and `record_label(name, value)` when the outcome is known. Data is auto-saved to CSV.
-2. **Train a model** — call `train_model()` with any scikit-learn–compatible estimator and choose a task type: `"binary"` classification, `"multiclass"` classification, or `"regression"`. Get a full report with feature importance, calibration, and metrics.
-3. **Deploy** — switch to deploy mode and call `ml_predict()` or `ml_predict_proba()` inside your strategy. Model loading, scaling, and feature ordering are handled automatically.
+Bitcoin AI Lab is not currently a live trading app.
 
-```python
-# Gather phase — inside your strategy
-def before(self):
-    self.record_features({
-        'rsi': ta.rsi(self.candles),
-        'adx': ta.adx(self.candles),
-    })
+The near-term goal is to make strategies prove themselves in fake-money simulations before anything real is even considered.
 
-# Deploy phase — gate entries with model confidence
-def should_long(self):
-    proba = self.ml_predict_proba()
-    return proba['long'] > 0.65
+## Project direction
+
+The project has two layers:
+
+```text
+1. Mobile preview layer
+   - GitHub Pages
+   - static HTML/CSS/JS
+   - fast Android testing
+   - fake-money simulations
+
+2. Jesse foundation layer
+   - Python trading framework
+   - backtesting
+   - paper/live architecture
+   - indicators
+   - metrics
+   - optimization
+   - Monte Carlo
+   - machine learning
 ```
 
-### Optimize Your Strategies
-Unsure about optimal parameters? Let the optimization mode decide using simple syntax. Fine-tune any strategy parameter with the Optuna library and easy cross-validation.
+The mobile preview lets the idea be tested quickly on Android. Jesse remains the serious engine/reference for later.
 
-```python
-@property
-def slow_sma(self):
-    return ta.sma(self.candles, self.hp['slow_sma_period'])
+## Near-term roadmap
 
-@property
-def fast_sma(self):
-    return ta.sma(self.candles, self.hp['fast_sma_period'])
+### v0.1 — Mobile shell polish
 
-def hyperparameters(self):
-    return [
-        {'name': 'slow_sma_period', 'type': int, 'min': 150, 'max': 210, 'default': 200},
-        {'name': 'fast_sma_period', 'type': int, 'min': 20, 'max': 100, 'default': 50},
-    ]
+- improve Android readability
+- improve chart and replay visibility
+- explain bot behavior
+- add buy-and-hold comparison
+- add risk verdict
+- clarify repo identity
+
+### v0.2 — Better simulation controls
+
+- starting balance input
+- fee/slippage controls
+- market length controls
+- more market scenarios
+- saved run summaries
+
+### v0.3 — Stronger bot lab
+
+- more baseline bots
+- strategy parameter sliders
+- multi-seed tournaments
+- bot rankings
+- richer replay logs
+
+### v0.4 — Jesse bridge planning
+
+- identify the safest hooks into Jesse
+- map Jesse backtest outputs into the lab scoreboard
+- decide whether the preview stays static or talks to a backend
+
+## Repository map
+
+```text
+docs/index.html                 Mobile GitHub Pages preview
+docs/BITCOIN_AI_LAB_DESIGN.md   Project design notes
+PROJECT_STATE.md                Current project state and milestones
+jesse/                          Original Jesse framework code
 ```
 
-## Getting Started
-Head over to the "getting started" section of the [documentation](https://docs.jesse.trade/docs/getting-started). The 
-documentation is **short yet very informative**. 
+## Jesse attribution
 
-## Resources
+This project is forked from Jesse, an MIT-licensed crypto trading framework for researching, backtesting, optimizing, and trading strategies.
 
-- [⚡️ Website](https://jesse.trade)
-- [🎓 Documentation](https://docs.jesse.trade)
-- [🎥 Youtube channel (screencast tutorials)](https://jesse.trade/youtube)
-- [🛟 Help center](https://jesse.trade/help)
-- [💬 Discord community](https://jesse.trade/discord)
-- [🤖 JesseGPT](https://jesse.trade/gpt) (Requires a free account)
+Original project:
 
-## What's next?
+```text
+https://github.com/jesse-ai/jesse
+```
 
-You can see the project's **[roadmap here](https://docs.jesse.trade/docs/roadmap.html)**. **Subscribe** to our mailing list at [jesse.trade](https://jesse.trade) to get the good stuff as soon they're released. Don't worry, We won't send you spam—Pinky promise.
-
-## Disclaimer
-This software is for educational purposes only. USE THE SOFTWARE AT **YOUR OWN RISK**. THE AUTHORS AND ALL AFFILIATES ASSUME **NO RESPONSIBILITY FOR YOUR TRADING RESULTS**. **Do not risk money that you are afraid to lose**. There might be **bugs** in the code - this software DOES NOT come with **ANY warranty**.
+The fork keeps Jesse intact while Bitcoin AI Lab is developed around it.
