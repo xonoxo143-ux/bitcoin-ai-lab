@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Bitcoin AI Lab currently runs as a browser-only GitHub Pages simulator. It uses synthetic Bitcoin markets, fake money, strategy personalities, a market-regime detector, an Adaptive Meta Bot, batch/tournament rankings, and local replay persistence.
+Bitcoin AI Lab currently runs as a browser-only GitHub Pages simulator. It uses synthetic Bitcoin markets, fake money, strategy personalities, a market-regime detector, an Adaptive Meta Bot, batch/tournament rankings, local replay persistence, and a local import page for bridge-format result JSON.
 
 Jesse is the larger Python trading framework that this repository was forked from. It should eventually provide the serious backtesting and trading-framework layer.
 
@@ -15,7 +15,7 @@ Jesse backtest result
 → browser lab scoreboard/replay UI
 ```
 
-The first bridge target is not live trading. The first bridge target is backtest-result import.
+The first bridge target is not live trading. The first bridge target is backtest-result import/export.
 
 ## Current browser lab format
 
@@ -215,34 +215,152 @@ The browser renderer should care most about:
 - `replay`
 - `equity`
 
-## Safe Jesse areas to inspect
+## Safe Jesse areas inspected
 
-Before any code bridge, inspect Jesse for these areas:
+### `jesse/modes/backtest_mode.py`
+
+Useful findings:
+
+- `run(...)` sets `config['app']['trading_mode'] = 'backtest'` before executing the backtest.
+- `_execute_backtest(...)` injects config, sets routes, resets the store, validates routes, initializes candle/order/position/exchange state, loads candles, then calls `simulator(...)`.
+- `simulator(...)` returns a `result` dictionary.
+- The `result` dictionary can include:
+  - `metrics`
+  - `equity_curve`
+  - `trades`
+  - `hyperparameters`
+  - `execution_duration`
+- The dashboard path publishes `metrics`, `equity_curve`, and `trades` and also stores them through `update_backtest_session_results(...)`.
+
+This is the strongest bridge clue so far: the safe adapter probably wants the output of `simulator(...)` or the stored `BacktestSession` result, not live/paper execution.
+
+### `jesse/services/metrics.py`
+
+Useful findings:
+
+- `trades(...)` returns a metrics dictionary from closed trades and daily balance.
+- Important bridge fields already exist or can be mapped:
+  - `starting_balance`
+  - `finishing_balance`
+  - `total`
+  - `fee`
+  - `net_profit`
+  - `net_profit_percentage`
+  - `max_drawdown`
+  - `annual_return`
+  - `sharpe_ratio`
+  - `sortino_ratio`
+  - `win_rate`
+
+This gives the bridge a direct metrics-to-summary mapping.
+
+### `jesse/services/report.py`
+
+Useful findings:
+
+- `trades()` returns closed trades using `to_dict_with_orders`.
+- `portfolio_metrics()` returns metrics via `stats.trades(...)`.
+- `orders()` returns route orders from the store.
+- `positions()` returns current/open position information.
+
+This is useful if the adapter reads Jesse's in-memory store after a backtest.
+
+### `jesse/models/BacktestSession.py`
+
+Useful findings:
+
+- Backtest sessions store JSON text fields for:
+  - `metrics`
+  - `equity_curve`
+  - `trades`
+  - `hyperparameters`
+  - `chart_data`
+  - `strategy_codes`
+- Properties already expose parsed forms:
+  - `metrics_json`
+  - `equity_curve_json`
+  - `trades_json`
+  - `hyperparameters_json`
+  - `chart_data_json`
+- `update_backtest_session_results(...)` writes the same result categories that the lab bridge wants.
+
+This is the safest post-run extraction path if using Jesse's dashboard/session flow.
+
+### `jesse/routes/__init__.py`
+
+Useful findings:
+
+- `router.initiate(routes, data_routes)` sets trading and data routes.
+- Routes include:
+  - exchange
+  - symbol
+  - timeframe
+  - strategy
+- The router also builds `config['app']['considering_candles']`, `considering_exchanges`, `considering_symbols`, and `considering_timeframes`.
+
+This tells the bridge what minimum route data must be supplied.
+
+## Recommended v1.0 adapter approach
+
+Do not modify Jesse internals first.
+
+The safest v1.0 adapter is an outside script/module that either:
+
+1. reads a completed `BacktestSession`, or
+2. runs a Jesse backtest in backtest mode and captures the returned/stored result.
+
+Preferred first prototype:
 
 ```text
-backtest
-routes
-strategy
-candles
-trades
-orders
-metrics
-statistics
-store
-config
-research
+Read completed BacktestSession
+→ metrics_json / equity_curve_json / trades_json
+→ bridge-format JSON file
+→ paste/import into docs/import.html
 ```
 
-Likely questions:
+Why this is safer:
 
-1. Where does Jesse start a backtest?
-2. Where are routes/strategies configured?
-3. Where are candles loaded/imported?
-4. Where are trades stored during a run?
-5. Where is equity curve or portfolio value calculated?
-6. Where are metrics/statistics emitted?
-7. Can we run a backtest without touching live/paper execution?
-8. Can we export a JSON result without altering Jesse internals?
+- avoids touching live/paper code
+- avoids modifying the simulator
+- avoids changing Jesse execution behavior
+- uses already-stored JSON outputs
+- keeps the bridge one-way: Jesse result → lab view
+
+## Metrics mapping draft
+
+```text
+Jesse metrics.finishing_balance       → summary.finalValue
+Jesse metrics.net_profit_percentage   → summary.returnPct
+Jesse metrics.max_drawdown            → summary.maxDrawdownPct
+Jesse metrics.total                   → summary.trades
+Jesse metrics.fee                     → summary.fees
+Jesse equity_curve                    → equity[]
+Jesse trades                          → trades[] and replay[]
+```
+
+If a field is missing, the adapter should emit a warning and set the field to `null`, not crash.
+
+## Replay mapping draft
+
+Jesse trades can become replay rows:
+
+```text
+[index, price, side/action, reason, value]
+```
+
+Minimum replay row:
+
+```json
+[1, 16750, "BUY", "Jesse trade", 10000]
+```
+
+Better replay row later:
+
+```json
+[1, 16750, "BUY", "TrendHunter opened long on BTC-USDT", 10000]
+```
+
+The first adapter does not need perfect per-candle decision replay. Trade-level replay is enough.
 
 ## Non-goals for the first bridge
 
@@ -284,36 +402,33 @@ Before anything real-money-related exists, the project must have:
 - no credentials in GitHub Pages
 - no credentials committed to repo
 
-## v0.9 prototype plan
+## v0.9 prototype status
 
-The safest next prototype is not to run Jesse yet.
-
-The safest next prototype is:
+Completed as:
 
 ```text
-Import Result JSON
+docs/import.html
 ```
 
-Steps:
-
-1. Add a browser-lab import area/button.
-2. Paste or load a bridge-format JSON result.
-3. Render it in the same scoreboard/replay UI.
-4. Confirm the browser lab can display engine-agnostic results.
-5. Then inspect Jesse internals for actual extraction points.
-
-That proves the adapter contract before Python integration.
+The import page can render bridge-format JSON locally.
 
 ## v1.0 bridge prototype plan
 
-After the browser can import result JSON:
+Next safest prototype:
 
-1. Inspect Jesse backtest flow.
-2. Create a small adapter script outside Jesse internals.
-3. Run or read a Jesse backtest result.
-4. Export bridge-format JSON.
-5. Paste/import that JSON into the browser lab.
-6. Compare with synthetic lab results.
+```text
+scripts/export_backtest_session_to_lab_json.py
+```
+
+Expected behavior:
+
+1. Accept a Jesse backtest session id or path to saved result JSON.
+2. Read metrics/equity/trades.
+3. Map values into Bitcoin AI Lab bridge format.
+4. Write `bitcoin_ai_lab_result.json`.
+5. User imports that JSON at `/import.html`.
+
+No live trading. No exchange credentials. No simulator changes.
 
 ## Current bridge stance
 
