@@ -153,8 +153,7 @@ async def _websocket_listener(api_url: str, password: str):
                 ws_url = api_url.replace('https://', 'wss://') + '/ws'
             else:
                 print(f"Invalid API URL format: {api_url}")
-                await asyncio.sleep(30)
-                continue
+                return # exit the function when the API URL is invalid
 
             # Generate auth token
             auth_token = sha256(password.encode('utf-8')).hexdigest()

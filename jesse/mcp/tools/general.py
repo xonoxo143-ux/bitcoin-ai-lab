@@ -9,8 +9,8 @@ The tools include:
 """
 
 from jesse.mcp.tools.services.general import (
-    get_jesse_status,
-    greet_user
+    get_jesse_status as get_jesse_status_service,
+    greet_user as greet_user_service,
 )
 
 
@@ -27,10 +27,10 @@ def register_general_tools(mcp):
     # Tool: get jesse status
     @mcp.tool()
     def get_jesse_status():
-        return get_jesse_status()
+        return get_jesse_status_service()
 
     # Tool: greet user
     @mcp.tool()
     def greet_user(name: str):
-        return greet_user(name)
+        return greet_user_service(name)
 
