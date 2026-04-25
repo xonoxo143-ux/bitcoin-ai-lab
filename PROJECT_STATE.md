@@ -2,9 +2,15 @@
 
 ## Current status
 
-This repository is a fork of Jesse. At the moment it is still structurally Jesse, not yet a purpose-built Bitcoin AI Lab.
+This repository is a fork of Jesse. It is still structurally Jesse, but the project identity has now been anchored as Bitcoin AI Lab.
 
-The fork is being repurposed into a simulator/lab where trading bots are tested against Bitcoin market conditions before any real-money behavior is considered.
+The current visible product is a mobile-first GitHub Pages preview at:
+
+```text
+https://xonoxo143-ux.github.io/bitcoin-ai-lab/
+```
+
+The preview runs fully in the browser from `docs/index.html`. It uses fake money and synthetic Bitcoin markets only.
 
 ## Core objective
 
@@ -24,6 +30,43 @@ Do not connect this project to real exchange execution until the simulator layer
 
 The goal is not to make a magic Bitcoin predictor. The goal is to make bots prove whether their strategy survives different market conditions without cheating, overfitting, or hiding risk.
 
+## What works now
+
+### GitHub Pages mobile preview
+
+Implemented in:
+
+```text
+docs/index.html
+```
+
+Current features:
+
+- synthetic BTC market generator
+- market scenarios:
+  - mixed cycle
+  - bull market
+  - bear market
+  - sideways chop
+  - flash crash
+- bot choices:
+  - trend bot
+  - risk managed bot
+  - buy and hold
+  - dip buyer
+  - random bot
+- starting cash input
+- seed input
+- final value
+- return percentage
+- max drawdown
+- trade count
+- beat-buy-and-hold flag
+- verdict label
+- BTC/bot/hold chart
+- replay table with bot reasons
+- Android-readable layout
+
 ## Why Jesse is the base
 
 Jesse already provides useful trading-framework machinery:
@@ -40,83 +83,79 @@ Jesse already provides useful trading-framework machinery:
 
 For Bitcoin AI Lab, the most useful pieces are the strategy, backtest, metrics, Monte Carlo, and ML systems. The live-trading pieces should stay secondary until much later.
 
-## Initial product shape
-
-Bitcoin AI Lab should become:
+## Current product shape
 
 ```text
 Bitcoin AI Lab
-= Bitcoin market/backtest engine
+= mobile browser preview
++ synthetic Bitcoin market simulator
 + bot strategy runner
-+ paper-money portfolio tracking
++ fake-money portfolio tracking
 + profit/risk scoreboard
 + replay/debug logs
-+ later UI/dashboard
++ later Jesse bridge
 + much later real exchange integration, if desired
 ```
 
-## First safe milestone
+## Completed milestone
 
-### v0.1 — Lab Identity Pass
+### v0.1 — Mobile Shell Polish
 
-Purpose: make the fork understandable before changing engine behavior.
+Completed:
 
-Tasks:
-
-- add project-state documentation
-- add design notes for Bitcoin AI Lab
-- identify Jesse files to preserve, wrap, or ignore
-- avoid renaming the Python package until the integration risk is understood
-- avoid touching live-trading behavior during the first pass
+- updated README for Bitcoin AI Lab identity
+- improved `docs/index.html` mobile preview
+- added bot explanation text
+- added risk managed bot
+- added buy-and-hold comparison
+- added verdict label
+- improved chart legend/readability
+- improved replay table with decision reasons
+- added `docs/BITCOIN_AI_LAB_DESIGN.md`
 
 ## Near-term milestones
 
-### v0.2 — Bitcoin-only simulation profile
+### v0.2 — Better simulation controls
 
-- define a BTC/USD-only default lab mode
-- define fake-money starting balance
-- define trading fee/slippage defaults
-- define baseline strategies:
-  - all cash
-  - buy and hold
-  - random bot
-  - simple trend bot
+- fee input
+- slippage input
+- market length input
+- volatility slider
+- strategy parameter sliders
+- random seed button
+- export/copy run JSON
 
-### v0.3 — Bot scoreboard
+### v0.3 — Compare-all-bots mode
 
-- final portfolio value
-- percent return
-- max drawdown
-- number of trades
-- fees paid
-- beat-buy-and-hold flag
-- simple verdict label
+- run all bots on the same market
+- rank by final value
+- rank by risk-adjusted score
+- show which bot beat buy-and-hold
+- show scenario-by-scenario results
 
-### v0.4 — Replay logs
+### v0.4 — Replay persistence
 
-- save bot decisions
-- save reason strings
-- save portfolio state over time
-- save comparison to baseline
+- saved run summaries
+- downloadable/copyable replay JSON
+- clearer run metadata
+- import/replay by seed and settings
 
-### v0.5 — Lab UI direction
+### v0.5 — Jesse bridge planning
 
-- decide whether to adapt Jesse's current UI or create a cleaner Bitcoin AI Lab dashboard layer
+- identify safe Jesse backtest entry points
+- map Jesse backtest outputs into the Bitcoin AI Lab scoreboard
+- keep live trading disabled by default
 
 ## Current cautions
 
 - The package still identifies as `jesse`.
-- The README still describes Jesse, not Bitcoin AI Lab.
 - The repository is large enough that blind renaming is risky.
 - We should preserve working Jesse behavior until we know exactly where to hook in.
 - This project is educational/simulation-first and should not be represented as financial advice or guaranteed profit software.
+- Live trading must remain out of the default user flow.
 
 ## Next best action
 
-Create `docs/BITCOIN_AI_LAB_DESIGN.md` with the first concrete architecture map:
+Add compare-all-bots mode to the GitHub Pages preview.
 
-- what Jesse provides
-- what Bitcoin AI Lab adds
-- which modules are likely touch points
-- what v0.1 should change
-- what must remain untouched
+This is the fastest next improvement because it turns the preview from a single-run demo into an actual lab: one market, multiple bots, ranked results.
