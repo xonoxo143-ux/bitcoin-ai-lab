@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Run one minimal Jesse backtest against synthetic BTC candles and export the result
+Run minimal Jesse backtests against synthetic BTC candles and export the result
 into Bitcoin AI Lab bridge-format JSON.
 
-This is the shortest real bridge path:
+This proves the bridge path:
 
     synthetic 1m candles
     -> Jesse backtest simulator
@@ -27,8 +27,9 @@ import json
 import math
 import os
 import sys
+from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Type
 
 import numpy as np
 
@@ -52,22 +53,63 @@ from jesse.modes.backtest_mode import simulator
 from scripts.export_backtest_session_to_lab_json import build_bridge_result
 
 
-class SyntheticBuyAndHold(Strategy):
-    """Minimal Jesse strategy for bridge proving.
+class SyntheticTimedHold(Strategy):
+    """Base class for safe bridge-proof strategies.
 
-    It opens one small long position early in the synthetic series and then holds.
-    The goal is not strategy quality; the goal is to produce one real Jesse backtest
-    result without exchange data, exchange keys, paper trading, or live trading.
+    These strategies only open one long position and hold. That keeps this proof
+    focused on Jesse engine execution and bridge export instead of complicated
+    Strategy API behavior.
     """
 
+    ENTRY_INDEX = 30
+    POSITION_SIZE = 0.05
+    LAB_BOT = "jesse-synthetic-timed-hold"
+    LAB_BOT_NAME = "Jesse Synthetic Timed Hold"
+
     def should_long(self) -> bool:
-        return self.index == 30 and self.position.is_close
+        return self.index == self.ENTRY_INDEX and self.position.is_close
 
     def go_long(self) -> None:
-        self.buy = (0.05, self.price)
+        self.buy = (self.POSITION_SIZE, self.price)
 
     def should_short(self) -> bool:
         return False
+
+
+class SyntheticEarlyHold(SyntheticTimedHold):
+    ENTRY_INDEX = 30
+    POSITION_SIZE = 0.05
+    LAB_BOT = "jesse-synthetic-early-hold"
+    LAB_BOT_NAME = "Jesse Early Hold"
+
+
+class SyntheticMidHold(SyntheticTimedHold):
+    ENTRY_INDEX = 240
+    POSITION_SIZE = 0.05
+    LAB_BOT = "jesse-synthetic-mid-hold"
+    LAB_BOT_NAME = "Jesse Mid Hold"
+
+
+class SyntheticLateHold(SyntheticTimedHold):
+    ENTRY_INDEX = 480
+    POSITION_SIZE = 0.05
+    LAB_BOT = "jesse-synthetic-late-hold"
+    LAB_BOT_NAME = "Jesse Late Hold"
+
+
+class SyntheticBoldEarlyHold(SyntheticTimedHold):
+    ENTRY_INDEX = 30
+    POSITION_SIZE = 0.12
+    LAB_BOT = "jesse-synthetic-bold-early-hold"
+    LAB_BOT_NAME = "Jesse Bold Early Hold"
+
+
+STRATEGIES: List[Type[SyntheticTimedHold]] = [
+    SyntheticEarlyHold,
+    SyntheticMidHold,
+    SyntheticLateHold,
+    SyntheticBoldEarlyHold,
+]
 
 
 def make_synthetic_candles(seed: int, count: int, start_price: float) -> np.ndarray:
@@ -101,7 +143,14 @@ def make_synthetic_candles(seed: int, count: int, start_price: float) -> np.ndar
     return np.array(rows, dtype=float)
 
 
-def configure_jesse(exchange: str, symbol: str, timeframe: str, starting_balance: float, fee: float) -> None:
+def configure_jesse(
+    exchange: str,
+    symbol: str,
+    timeframe: str,
+    starting_balance: float,
+    fee: float,
+    strategy_cls: Type[SyntheticTimedHold],
+) -> None:
     config["app"]["trading_mode"] = "backtest"
     config["app"]["debug_mode"] = False
     config["env"]["data"]["warmup_candles_num"] = 0
@@ -117,12 +166,12 @@ def configure_jesse(exchange: str, symbol: str, timeframe: str, starting_balance
         "exchange": exchange,
         "symbol": symbol,
         "timeframe": timeframe,
-        "strategy": SyntheticBuyAndHold,
+        "strategy": strategy_cls,
     }]
 
     router.initiate(routes, data_routes=[])
     store.reset()
-    store.app.set_session_id("bitcoin-ai-lab-synthetic-jesse-backtest")
+    store.app.set_session_id(f"bitcoin-ai-lab-{strategy_cls.LAB_BOT}")
     validate_routes(router)
     store.candles.init_storage(5000)
     exchange_service.initialize_exchanges_state()
@@ -130,12 +179,12 @@ def configure_jesse(exchange: str, symbol: str, timeframe: str, starting_balance
     position_service.initialize_positions_state()
 
 
-def run_backtest(args: argparse.Namespace) -> Dict:
+def run_one_strategy(args: argparse.Namespace, strategy_cls: Type[SyntheticTimedHold]) -> Dict:
     exchange = exchanges.SANDBOX
     symbol = "BTC-USDT"
     timeframe = "1m"
 
-    configure_jesse(exchange, symbol, timeframe, args.starting_balance, args.fee)
+    configure_jesse(exchange, symbol, timeframe, args.starting_balance, args.fee, strategy_cls)
 
     candles = make_synthetic_candles(args.seed, args.candles, args.start_price)
     key = f"{exchange}-{symbol}"
@@ -166,26 +215,77 @@ def run_backtest(args: argparse.Namespace) -> Dict:
             "exchange": exchange,
             "symbol": symbol,
             "timeframe": timeframe,
-            "strategy": "SyntheticBuyAndHold",
+            "strategy": strategy_cls.__name__,
             "startingBalance": args.starting_balance,
             "fee": args.fee,
             "candles": args.candles,
             "seed": args.seed,
             "source": "synthetic-in-memory-candles",
+            "entryIndex": strategy_cls.ENTRY_INDEX,
+            "positionSize": strategy_cls.POSITION_SIZE,
         },
         source="synthetic_jesse_backtest",
-        bot="jesse-synthetic-hold",
-        bot_name="Jesse Synthetic Hold",
+        bot=strategy_cls.LAB_BOT,
+        bot_name=strategy_cls.LAB_BOT_NAME,
         warnings=[
             "Synthetic candle data. This proves Jesse engine integration, not market realism.",
-            "Minimal buy-and-hold strategy. Strategy quality is intentionally not the target of this bridge proof.",
+            "Timed hold strategies are intentionally simple. Strategy quality is not the target of this bridge proof.",
             "Benchmark output is disabled because the synthetic runner does not import candles into Jesse's database."
         ],
     )
 
 
+def run_backtests(args: argparse.Namespace) -> Dict:
+    results = [run_one_strategy(args, strategy_cls) for strategy_cls in STRATEGIES]
+    ranked = sorted(
+        results,
+        key=lambda item: float(item.get("summary", {}).get("finalValue") or 0),
+        reverse=True,
+    )
+    winner = deepcopy(ranked[0])
+
+    return {
+        "version": "bridge-v0.2",
+        "engine": "jesse",
+        "mode": "backtest-comparison",
+        "source": "synthetic_jesse_backtest_comparison",
+        "sessionId": None,
+        "bot": winner.get("bot"),
+        "botName": winner.get("botName"),
+        "settings": {
+            "symbol": "BTC-USDT",
+            "timeframe": "1m",
+            "startingBalance": args.starting_balance,
+            "fee": args.fee,
+            "candles": args.candles,
+            "seed": args.seed,
+            "startPrice": args.start_price,
+            "strategyCount": len(results),
+            "source": "synthetic-in-memory-candles",
+        },
+        "summary": winner.get("summary", {}),
+        "equity": winner.get("equity", []),
+        "replay": winner.get("replay", []),
+        "ranking": [
+            {
+                "rank": i + 1,
+                "bot": item.get("bot"),
+                "botName": item.get("botName"),
+                "summary": item.get("summary", {}),
+                "settings": item.get("settings", {}),
+            }
+            for i, item in enumerate(ranked)
+        ],
+        "results": ranked,
+        "warnings": [
+            "Synthetic comparison data. This proves multi-strategy Jesse bridge integration, not market realism.",
+            "All included strategies are simple timed long entries; they are bridge probes, not trading recommendations.",
+        ],
+    }
+
+
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run synthetic Jesse backtest and export Bitcoin AI Lab JSON.")
+    parser = argparse.ArgumentParser(description="Run synthetic Jesse backtests and export Bitcoin AI Lab JSON.")
     parser.add_argument("--output", type=Path, default=Path("bitcoin_ai_lab_synthetic_jesse_result.json"))
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--candles", type=int, default=720, help="Number of synthetic 1m candles.")
@@ -197,11 +297,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    bridge = run_backtest(args)
+    bridge = run_backtests(args)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(bridge, indent=2), encoding="utf-8")
-    print(f"Wrote synthetic Jesse bridge result: {args.output}")
+    print(f"Wrote synthetic Jesse bridge comparison result: {args.output}")
     print("Import it at docs/import.html or the GitHub Pages import URL.")
     return 0
 
