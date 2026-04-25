@@ -1,0 +1,59 @@
+name: Synthetic Jesse Bridge
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/run_synthetic_jesse_backtest_to_lab_json.py"
+      - "scripts/export_backtest_session_to_lab_json.py"
+      - ".github/workflows/synthetic-jesse-bridge.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  run-synthetic-jesse-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run synthetic Jesse bridge
+        run: |
+          python scripts/run_synthetic_jesse_backtest_to_lab_json.py \
+            --output bitcoin_ai_lab_synthetic_jesse_result.json
+
+      - name: Show bridge result summary
+        run: |
+          python - <<'PY'
+          import json
+          data = json.load(open('bitcoin_ai_lab_synthetic_jesse_result.json', 'r', encoding='utf-8'))
+          print('engine:', data.get('engine'))
+          print('mode:', data.get('mode'))
+          print('botName:', data.get('botName'))
+          print('summary:', json.dumps(data.get('summary', {}), indent=2))
+          print('warnings:', data.get('warnings'))
+          PY
+
+      - name: Upload bridge JSON artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitcoin-ai-lab-synthetic-jesse-result
+          path: bitcoin_ai_lab_synthetic_jesse_result.json
