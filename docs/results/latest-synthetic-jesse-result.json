@@ -42,7 +42,7 @@
       "pnl": 226.22322950122427,
       "reason": "Jesse buy trade",
       "raw": {
-        "id": "9124591a-110a-4f87-bde5-8a4bfe25c6c0",
+        "id": "dc2dce38-8449-4780-8fe1-1902fbeb69b5",
         "strategy_name": "SyntheticBuyAndHold",
         "symbol": "BTC-USDT",
         "exchange": "Sandbox",
@@ -59,8 +59,8 @@
         "holding_period": 41340.0,
         "orders": [
           {
-            "id": "ad3cdfde-991d-4bd5-b9e6-606683854608",
-            "trade_id": "9124591a-110a-4f87-bde5-8a4bfe25c6c0",
+            "id": "d04e48d6-84cd-41e3-a915-bd6746c62cf7",
+            "trade_id": "dc2dce38-8449-4780-8fe1-1902fbeb69b5",
             "session_id": null,
             "exchange_id": null,
             "symbol": "BTC-USDT",
@@ -82,8 +82,8 @@
             "session_mode": null
           },
           {
-            "id": "7e37e0b8-da01-40a4-9f9b-9de15e03e088",
-            "trade_id": "9124591a-110a-4f87-bde5-8a4bfe25c6c0",
+            "id": "682fddec-bf23-48e0-9955-6e282ef93d3d",
+            "trade_id": "dc2dce38-8449-4780-8fe1-1902fbeb69b5",
             "session_id": null,
             "exchange_id": null,
             "symbol": "BTC-USDT",
