@@ -1,0 +1,54 @@
+{
+  "metrics": {
+    "starting_balance": 10000,
+    "finishing_balance": 12500,
+    "net_profit_percentage": 25,
+    "max_drawdown": -18.5,
+    "total": 4,
+    "fee": 143,
+    "win_rate": 0.5,
+    "sharpe_ratio": 1.22,
+    "sortino_ratio": 1.74
+  },
+  "equity_curve": [
+    [1672531200000, 10000],
+    [1672617600000, 10400],
+    [1672704000000, 9800],
+    [1672790400000, 11600],
+    [1672876800000, 12500]
+  ],
+  "trades": [
+    {
+      "opened_at": 1672531200000,
+      "side": "long",
+      "entry_price": 16750,
+      "qty": 0.1,
+      "fee": 1.67,
+      "PNL": 250
+    },
+    {
+      "opened_at": 1672617600000,
+      "side": "long",
+      "entry_price": 18000,
+      "qty": 0.08,
+      "fee": 1.44,
+      "PNL": -120
+    },
+    {
+      "opened_at": 1672790400000,
+      "side": "short",
+      "entry_price": 19500,
+      "qty": 0.05,
+      "fee": 0.97,
+      "PNL": 370
+    },
+    {
+      "opened_at": 1672876800000,
+      "side": "long",
+      "entry_price": 20100,
+      "qty": 0.07,
+      "fee": 1.4,
+      "PNL": 500
+    }
+  ]
+}
