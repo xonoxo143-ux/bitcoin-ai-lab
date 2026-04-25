@@ -23,6 +23,7 @@ This script uses Jesse's actual backtest simulator with in-memory synthetic cand
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import os
 import sys
@@ -56,7 +57,7 @@ class SyntheticBuyAndHold(Strategy):
 
     It opens one small long position early in the synthetic series and then holds.
     The goal is not strategy quality; the goal is to produce one real Jesse backtest
-    result without exchange data or live trading.
+    result without exchange data, exchange keys, paper trading, or live trading.
     """
 
     def should_long(self) -> bool:
@@ -67,31 +68,6 @@ class SyntheticBuyAndHold(Strategy):
 
     def should_short(self) -> bool:
         return False
-
-
-class SyntheticTrendFollower(Strategy):
-    """Small momentum strategy for a more active synthetic backtest."""
-
-    def should_long(self) -> bool:
-        if self.index < 50 or self.position.is_open:
-            return False
-        recent = self.candles[-20:, 2]
-        older = self.candles[-50:, 2]
-        return float(np.mean(recent)) > float(np.mean(older))
-
-    def go_long(self) -> None:
-        self.buy = (0.04, self.price)
-
-    def should_short(self) -> bool:
-        return False
-
-    def update_position(self) -> None:
-        if self.index < 80:
-            return
-        recent = self.candles[-12:, 2]
-        older = self.candles[-30:, 2]
-        if float(np.mean(recent)) < float(np.mean(older)):
-            self.liquidate()
 
 
 def make_synthetic_candles(seed: int, count: int, start_price: float) -> np.ndarray:
@@ -117,6 +93,7 @@ def make_synthetic_candles(seed: int, count: int, start_price: float) -> np.ndar
         low = min(old, close) * (1 - abs(rng.normal(0, 0.0025)))
         volume = max(1.0, 100 + rng.normal(0, 12))
 
+        # Jesse candle shape is [timestamp, open, close, high, low, volume].
         rows.append([timestamp, old, close, high, low, volume])
         timestamp += 60_000
         price = close
@@ -140,7 +117,7 @@ def configure_jesse(exchange: str, symbol: str, timeframe: str, starting_balance
         "exchange": exchange,
         "symbol": symbol,
         "timeframe": timeframe,
-        "strategy": SyntheticTrendFollower,
+        "strategy": SyntheticBuyAndHold,
     }]
 
     router.initiate(routes, data_routes=[])
@@ -187,7 +164,7 @@ def run_backtest(args: argparse.Namespace) -> Dict:
             "exchange": exchange,
             "symbol": symbol,
             "timeframe": timeframe,
-            "strategy": "SyntheticTrendFollower",
+            "strategy": "SyntheticBuyAndHold",
             "startingBalance": args.starting_balance,
             "fee": args.fee,
             "candles": args.candles,
@@ -195,10 +172,11 @@ def run_backtest(args: argparse.Namespace) -> Dict:
             "source": "synthetic-in-memory-candles",
         },
         source="synthetic_jesse_backtest",
-        bot="jesse-synthetic-trend",
-        bot_name="Jesse Synthetic Trend",
+        bot="jesse-synthetic-hold",
+        bot_name="Jesse Synthetic Hold",
         warnings=[
-            "Synthetic candle data. This proves Jesse engine integration, not market realism."
+            "Synthetic candle data. This proves Jesse engine integration, not market realism.",
+            "Minimal buy-and-hold strategy. Strategy quality is intentionally not the target of this bridge proof."
         ],
     )
 
@@ -219,7 +197,7 @@ def main() -> int:
     bridge = run_backtest(args)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(__import__("json").dumps(bridge, indent=2), encoding="utf-8")
+    args.output.write_text(json.dumps(bridge, indent=2), encoding="utf-8")
     print(f"Wrote synthetic Jesse bridge result: {args.output}")
     print("Import it at docs/import.html or the GitHub Pages import URL.")
     return 0
