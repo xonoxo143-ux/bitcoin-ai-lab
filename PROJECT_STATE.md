@@ -23,6 +23,8 @@ Near term, the platform must:
 - measure profit and risk
 - run batch rankings
 - keep replay/debug logs for bot decisions
+- persist useful runs locally
+- export/import result JSON
 
 Long term, the platform should:
 
@@ -37,7 +39,7 @@ Long term, the platform should:
 
 Start with paper/simulated trading only.
 
-Do not connect this project to real exchange execution until the simulator layer, scoring layer, replay layer, personality layer, regime-detection layer, and Meta Bot layer are trustworthy.
+Do not connect this project to real exchange execution until the simulator layer, scoring layer, replay layer, personality layer, regime-detection layer, Meta Bot layer, and bridge layer are trustworthy.
 
 The goal is not to make a magic Bitcoin predictor. The goal is to make bots prove whether their strategy survives different market conditions without cheating, overfitting, or hiding risk.
 
@@ -60,16 +62,31 @@ Current features:
   - bear market
   - sideways chop
   - flash crash
-- bot choices:
-  - trend bot
-  - risk managed bot
-  - buy and hold
-  - dip buyer
-  - random bot
+- strategy personalities:
+  - Adaptive Meta Bot
+  - Trend Hunter
+  - Risk Turtle
+  - HODL Monk
+  - Dip Vulture
+  - Chaos Monkey
+- market regime detector:
+  - uptrend
+  - downtrend
+  - range
+  - chop
+  - crash
+  - recovery
+  - unclear
+- selected-personality simulation
+- batch mode that ranks every personality on the same market
+- tournament mode across all markets and multiple seeds
 - starting cash input
 - seed input
-- selected-bot simulation
-- batch mode that ranks every bot on the same market
+- fee input
+- slippage input
+- market length input
+- volatility input
+- random seed button
 - final value
 - return percentage
 - max drawdown
@@ -78,6 +95,10 @@ Current features:
 - verdict label
 - BTC/bot/hold chart
 - replay table with bot reasons
+- local replay persistence via browser storage
+- copy/export run JSON
+- load saved run
+- clear saved run
 - Android-readable compact layout
 
 ## Why Jesse is the base
@@ -102,14 +123,17 @@ For Bitcoin AI Lab, the most useful pieces are the strategy, backtest, metrics, 
 Bitcoin AI Lab
 = mobile browser preview
 + synthetic Bitcoin market simulator
-+ bot strategy runner
++ strategy personality runner
 + fake-money portfolio tracking
 + profit/risk scoreboard
 + batch rankings
++ tournament rankings
++ market regime detector
++ adaptive hard-switch Meta Bot
 + replay/debug logs
-+ later bot personality layer
-+ later market regime detector
-+ later adaptive Meta Bot
++ local persistence
++ result JSON export
++ later result JSON import
 + later Jesse bridge
 + much later guarded real exchange integration, if desired
 ```
@@ -123,8 +147,10 @@ The fully automated platform should be staged:
 2. Bot Personality Lab
 3. Market Regime Lab
 4. Adaptive Meta Bot
-5. Paper Trader Platform
-6. Guarded Live Trader
+5. Result Import/Bridge Contract
+6. Jesse Backtest Bridge
+7. Paper Trader Platform
+8. Guarded Live Trader
 ```
 
 The Meta Bot is the key future layer. It should watch current/past market conditions, detect the likely market regime, and switch or weight strategy personalities on the fly.
@@ -159,52 +185,92 @@ Completed:
 - switches chart/replay to selected or winning bot
 - lets user tap batch rows to inspect individual bots
 
-## Near-term milestones
-
 ### v0.3 — Bot Personalities v1
 
-- convert current bots into named strategy personalities
-- add trait summaries
-- add preferred market and weakness labels
-- make batch results read like personality comparisons
-- improve replay reasons using personality language
+Completed:
+
+- converted current bots into named strategy personalities
+- added trait summaries
+- added preferred market and weakness labels
+- made batch results read like personality comparisons
+- improved replay reasons using personality language
 
 ### v0.4 — Market Regime Lab v1
 
-- detect trend/chop/crash/recovery from past/current data
-- show regime label during runs
-- rank best bots by regime
-- avoid using future scenario labels in bot decisions
+Completed:
+
+- detects trend/chop/crash/recovery from past/current data
+- shows regime label during runs
+- avoids using future scenario labels in bot decisions
+- adds regime notes to result summaries
 
 ### v0.5 — Meta Bot v1
 
-- add adaptive strategy switching or weighting
-- add cooldown to avoid whiplash
-- add switch replay explanations
-- compare Meta Bot against every specialist bot
+Completed:
+
+- added Adaptive Meta Bot
+- hard-switches among specialist personalities based on detected regime
+- logs switch reasons in replay
+- compares Meta Bot against every specialist bot
 
 ### v0.6 — Better simulation controls
+
+Completed:
 
 - fee input
 - slippage input
 - market length input
-- volatility slider
-- strategy parameter sliders
+- volatility input
 - random seed button
 - export/copy run JSON
 
 ### v0.7 — Replay persistence
 
+Completed:
+
 - saved run summaries
-- downloadable/copyable replay JSON
+- copyable replay JSON
 - clearer run metadata
-- import/replay by seed and settings
+- local browser save/load
+- clear saved run
 
 ### v0.8 — Jesse bridge planning
 
-- identify safe Jesse backtest entry points
-- map Jesse backtest outputs into the Bitcoin AI Lab scoreboard
-- keep live trading disabled by default
+Completed:
+
+- added `docs/JESSE_BRIDGE_PLAN.md`
+- defined bridge purpose
+- defined current browser lab format
+- defined desired Jesse capabilities
+- defined bridge input/output schema
+- identified safe Jesse areas to inspect
+- blocked live trading from bridge v1
+- defined v0.9 import-result prototype
+
+## Near-term milestones
+
+### v0.9 — Import Result JSON
+
+- add browser-lab import area/button
+- paste bridge-format JSON
+- render imported results in the scoreboard/replay UI
+- prove the UI can display engine-agnostic results
+- keep import local-only
+
+### v1.0 — Jesse bridge prototype
+
+- inspect Jesse backtest flow
+- identify safe adapter points
+- create adapter outside Jesse internals if possible
+- export Jesse-style backtest result JSON
+- import that result into the browser lab
+
+### v1.1 — Meta Bot v2 / Ensemble Planning
+
+- define weighted strategy allocation
+- define conflict handling
+- define risk override behavior
+- avoid whiplash from rapid rebalancing
 
 ## Current cautions
 
@@ -214,9 +280,11 @@ Completed:
 - This project is educational/simulation-first and should not be represented as financial advice or guaranteed profit software.
 - Live trading must remain out of the default user flow.
 - Meta Bot strategy switching must not cheat by using future information.
+- Jesse bridge v1 is backtest/result-import only.
+- No exchange keys should be committed or exposed in GitHub Pages.
 
 ## Next best action
 
-Add Bot Personalities v1.
+Add v0.9 Import Result JSON to the browser preview.
 
-This is now the most important next layer because adaptive automation only works if the platform knows what each strategy is good at and what kind of market it prefers.
+This proves the bridge contract before touching Jesse internals.
