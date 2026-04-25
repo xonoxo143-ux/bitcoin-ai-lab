@@ -9,7 +9,7 @@ on:
       - ".github/workflows/synthetic-jesse-bridge.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -52,6 +52,16 @@ jobs:
           print('summary:', json.dumps(data.get('summary', {}), indent=2))
           print('warnings:', data.get('warnings'))
           PY
+
+      - name: Publish latest result to GitHub Pages files
+        run: |
+          mkdir -p docs/results
+          cp bitcoin_ai_lab_synthetic_jesse_result.json docs/results/latest-synthetic-jesse-result.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/results/latest-synthetic-jesse-result.json
+          git commit -m "Update latest synthetic Jesse result" || echo "No result changes to commit"
+          git push
 
       - name: Upload bridge JSON artifact
         uses: actions/upload-artifact@v4
