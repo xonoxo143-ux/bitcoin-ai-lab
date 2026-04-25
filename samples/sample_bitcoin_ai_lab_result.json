@@ -1,0 +1,119 @@
+{
+  "version": "bridge-v0.1",
+  "engine": "jesse",
+  "mode": "backtest",
+  "source": "samples/sample_raw_jesse_result.json",
+  "sessionId": null,
+  "bot": "trend",
+  "botName": "Trend Hunter",
+  "settings": {
+    "symbol": "BTC-USDT",
+    "timeframe": "1h",
+    "strategy": "TrendHunter"
+  },
+  "summary": {
+    "finalValue": 12500,
+    "returnPct": 25,
+    "maxDrawdownPct": -18.5,
+    "trades": 4,
+    "fees": 143,
+    "slippage": 0,
+    "beatHold": null,
+    "regime": "Historical",
+    "regimeConfidence": "N/A",
+    "winRate": 0.5,
+    "sharpeRatio": 1.22,
+    "sortinoRatio": 1.74
+  },
+  "equity": [
+    {
+      "time": "2023-01-01T00:00:00Z",
+      "value": 10000
+    },
+    {
+      "time": "2023-01-02T00:00:00Z",
+      "value": 10400
+    },
+    {
+      "time": "2023-01-03T00:00:00Z",
+      "value": 9800
+    },
+    {
+      "time": "2023-01-04T00:00:00Z",
+      "value": 11600
+    },
+    {
+      "time": "2023-01-05T00:00:00Z",
+      "value": 12500
+    }
+  ],
+  "trades": [
+    {
+      "time": "2023-01-01T00:00:00Z",
+      "side": "buy",
+      "price": 16750,
+      "qty": 0.1,
+      "fee": 1.67,
+      "pnl": 250,
+      "reason": "Jesse buy trade"
+    },
+    {
+      "time": "2023-01-02T00:00:00Z",
+      "side": "buy",
+      "price": 18000,
+      "qty": 0.08,
+      "fee": 1.44,
+      "pnl": -120,
+      "reason": "Jesse buy trade"
+    },
+    {
+      "time": "2023-01-04T00:00:00Z",
+      "side": "sell",
+      "price": 19500,
+      "qty": 0.05,
+      "fee": 0.97,
+      "pnl": 370,
+      "reason": "Jesse sell trade"
+    },
+    {
+      "time": "2023-01-05T00:00:00Z",
+      "side": "buy",
+      "price": 20100,
+      "qty": 0.07,
+      "fee": 1.4,
+      "pnl": 500,
+      "reason": "Jesse buy trade"
+    }
+  ],
+  "replay": [
+    [
+      1,
+      16750,
+      "BUY",
+      "Jesse buy trade",
+      10000
+    ],
+    [
+      2,
+      18000,
+      "BUY",
+      "Jesse buy trade",
+      10400
+    ],
+    [
+      3,
+      19500,
+      "SELL",
+      "Jesse sell trade",
+      9800
+    ],
+    [
+      4,
+      20100,
+      "BUY",
+      "Jesse buy trade",
+      11600
+    ]
+  ],
+  "warnings": []
+}
