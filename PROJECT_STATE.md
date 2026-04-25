@@ -4,7 +4,19 @@
 
 This repository is a fork of Jesse. It is still structurally Jesse, but the project identity has now been anchored as Bitcoin AI Lab.
 
-The current visible product is a mobile-first GitHub Pages preview at:
+The recommended current entry point is:
+
+```text
+https://xonoxo143-ux.github.io/bitcoin-ai-lab/latest.html
+```
+
+`latest.html` currently redirects to the best active product page:
+
+```text
+https://xonoxo143-ux.github.io/bitcoin-ai-lab/ensemble.html
+```
+
+The original main preview still exists at:
 
 ```text
 https://xonoxo143-ux.github.io/bitcoin-ai-lab/
@@ -16,7 +28,16 @@ The bridge/import test page is at:
 https://xonoxo143-ux.github.io/bitcoin-ai-lab/import.html
 ```
 
-The preview runs fully in the browser from `docs/index.html`. It uses fake money and synthetic Bitcoin markets only.
+The visible product runs fully in the browser. It uses fake money and synthetic Bitcoin markets only.
+
+## Current page roles
+
+```text
+docs/latest.html    → stable recommended entry point
+docs/ensemble.html  → current best lab product page
+docs/index.html     → older main lab page; update path currently blocked by SHA/tool conflict
+docs/import.html    → bridge-format JSON import page
+```
 
 ## Core objective
 
@@ -31,6 +52,7 @@ Near term, the platform must:
 - keep replay/debug logs for bot decisions
 - persist useful runs locally
 - export/import result JSON
+- compare specialist bots against hard-switch and weighted Meta Bot behavior
 
 Long term, the platform should:
 
@@ -53,9 +75,11 @@ The goal is not to make a magic Bitcoin predictor. The goal is to make bots prov
 
 ### GitHub Pages mobile preview
 
-Implemented in:
+Implemented across:
 
 ```text
+docs/latest.html
+docs/ensemble.html
 docs/index.html
 docs/import.html
 ```
@@ -70,12 +94,18 @@ Current features:
   - sideways chop
   - flash crash
 - strategy personalities:
+  - Ensemble Meta Bot
   - Adaptive Meta Bot
   - Trend Hunter
   - Risk Turtle
   - HODL Monk
   - Dip Vulture
   - Chaos Monkey
+- weighted Ensemble Meta Bot:
+  - blends Trend Hunter, Risk Turtle, and Dip Vulture
+  - uses regime-based weights
+  - activates risk override during crash/downtrend regimes
+  - logs final action and weight explanation
 - market regime detector:
   - uptrend
   - downtrend
@@ -98,14 +128,12 @@ Current features:
 - return percentage
 - max drawdown
 - trade count
-- beat-buy-and-hold flag
+- beat-buy-and-hold comparison where available
 - verdict label
 - BTC/bot/hold chart
 - replay table with bot reasons
-- local replay persistence via browser storage
-- copy/export run JSON
-- load saved run
-- clear saved run
+- local replay persistence via browser storage where available
+- copy/export run JSON where available
 - import bridge-format result JSON page
 - imported-result scoreboard/replay rendering
 - Android-readable compact layout
@@ -139,6 +167,7 @@ Bitcoin AI Lab
 + tournament rankings
 + market regime detector
 + adaptive hard-switch Meta Bot
++ weighted Ensemble Meta Bot
 + replay/debug logs
 + local persistence
 + result JSON export
@@ -158,11 +187,12 @@ The fully automated platform should be staged:
 4. Adaptive Meta Bot
 5. Result Import/Bridge Contract
 6. Jesse Backtest Bridge
-7. Paper Trader Platform
-8. Guarded Live Trader
+7. Ensemble / weighted Meta Bot
+8. Paper Trader Platform
+9. Guarded Live Trader
 ```
 
-The Meta Bot is the key future layer. It should watch current/past market conditions, detect the likely market regime, and switch or weight strategy personalities on the fly.
+The Meta Bot layer is the key future layer. It should watch current/past market conditions, detect the likely market regime, and switch or weight strategy personalities on the fly.
 
 It must not use future candles or hidden scenario labels. No cheating.
 
@@ -268,22 +298,81 @@ Completed:
 - renders imported replay rows
 - stores latest imported result locally
 
-## Near-term milestones
-
 ### v1.0 — Jesse bridge prototype
 
-- inspect Jesse backtest flow
-- identify safe adapter points
-- create adapter outside Jesse internals if possible
-- export Jesse-style backtest result JSON
-- import that result into the browser lab/import page
+Completed enough for now:
 
-### v1.1 — Meta Bot v2 / Ensemble Planning
+- inspected Jesse backtest flow
+- identified safe adapter points
+- added exporter script:
+  - `scripts/export_backtest_session_to_lab_json.py`
+- added exporter usage doc:
+  - `docs/EXPORT_BACKTEST_TO_LAB_JSON.md`
+- added sample fixtures:
+  - `samples/sample_raw_jesse_result.json`
+  - `samples/sample_bitcoin_ai_lab_result.json`
 
-- define weighted strategy allocation
-- define conflict handling
-- define risk override behavior
-- avoid whiplash from rapid rebalancing
+Bridge work is parked until there is real Jesse session data or a clear reason to wire deeper.
+
+### v1.1 — Ensemble Meta Bot preview
+
+Completed:
+
+- added `docs/ensemble.html`
+- added Ensemble Meta Bot as visible product preview
+- added weighted specialist behavior
+- added regime-based weights
+- added crash/downtrend risk override
+- added replay weight explanations
+- added batch/tournament comparison including Ensemble Meta Bot
+
+### v1.2 — Stable latest entry point
+
+Completed:
+
+- added `docs/latest.html`
+- `latest.html` redirects to `ensemble.html`
+- this gives the project one stable current-product URL while `index.html` remains blocked by update tooling
+
+## Parked issue: `index.html` consolidation
+
+Goal:
+
+```text
+Merge Ensemble Meta Bot into docs/index.html
+```
+
+Current blocker:
+
+```text
+GitHub contents update rejects the available docs/index.html SHA.
+```
+
+Workaround:
+
+```text
+Use docs/latest.html as the recommended entry point.
+```
+
+Do not keep fighting `index.html` blindly. Resolve it only with a cleaner Git update path or direct repo editing.
+
+## Near-term milestones
+
+### v1.3 — Product polish on current lab
+
+- use `latest.html` / `ensemble.html` as the active product surface
+- avoid new bridge scaffolding unless needed
+- improve the visible lab experience directly
+- likely candidates:
+  - clearer regime/weight display
+  - better comparison summaries
+  - better mobile layout around batch/tournament
+  - clearer bot trait cards
+
+### Later — Main-page consolidation
+
+- replace or update `docs/index.html` only after the SHA/tooling issue is resolved
+- make `/bitcoin-ai-lab/` point to the same experience as `/latest.html`
 
 ## Current cautions
 
@@ -295,9 +384,14 @@ Completed:
 - Meta Bot strategy switching must not cheat by using future information.
 - Jesse bridge v1 is backtest/result-import only.
 - No exchange keys should be committed or exposed in GitHub Pages.
+- `docs/index.html` update path is currently unreliable; use `latest.html` until resolved.
 
 ## Next best action
 
-Start v1.0 Jesse bridge prototype planning/inspection.
+Use the active current lab at:
 
-The next concrete move is to inspect Jesse's backtest flow and identify a safe adapter point for exporting bridge-format JSON without touching live trading.
+```text
+https://xonoxo143-ux.github.io/bitcoin-ai-lab/latest.html
+```
+
+Then do product polish on the visible Ensemble lab rather than adding more bridge scaffolding.
