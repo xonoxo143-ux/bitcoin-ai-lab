@@ -2,9 +2,11 @@
 
 ## Purpose
 
-Bitcoin AI Lab is a fake-money Bitcoin bot simulator and strategy lab.
+Bitcoin AI Lab is a fake-money Bitcoin bot simulator, strategy lab, and staged foundation for a fully automated trader platform.
 
 The project should make trading bots prove themselves before anything real-money related is considered. A bot should not be judged only by profit. It should also be judged by drawdown, overtrading, fees, consistency, and whether it beats simple baselines.
+
+Long term, the platform should be able to detect what kind of market it appears to be in, choose the best strategy personality for that moment, and switch or weight strategies on the fly. That adaptive layer is called the Meta Bot.
 
 ## Current product shape
 
@@ -27,6 +29,7 @@ Current preview capabilities:
 - buy-and-hold comparison
 - chart
 - replay/debug table
+- batch rankings for all current bots on the same market
 
 This preview is intentionally small and static. It is the fastest way to test the idea on Android.
 
@@ -41,9 +44,138 @@ Do not add live exchange execution until the lab can:
 - explain bot decisions
 - show drawdown and fees clearly
 - save useful replay logs
+- test many market regimes
+- prove adaptive strategy switching without future knowledge
 - block accidental real-money behavior by default
 
-A future real-money unlock should require an explicit config flag and visible warning.
+A future real-money unlock should require an explicit config flag, visible warning, and separate execution layer.
+
+## Fully automated trader platform direction
+
+Bitcoin AI Lab should grow in stages:
+
+```text
+Stage 1: Static Lab Preview
+- fake money
+- synthetic markets
+- simple bots
+- batch rankings
+- Android-visible through GitHub Pages
+
+Stage 2: Bot Personality Lab
+- named trader archetypes
+- trait-weighted decision logic
+- strengths and weaknesses
+- market preference profiles
+
+Stage 3: Market Regime Lab
+- detect trend, chop, crash, recovery, volatility spikes
+- score what the market appears to be doing using only past/current data
+- run scenario-specific tournaments
+
+Stage 4: Meta Bot
+- chooses or weights bot personalities based on current regime
+- switches strategy on the fly
+- logs why it switched
+- must not use future information
+
+Stage 5: Paper Trader Platform
+- real historical candles
+- paper/live data feed without real orders
+- persistent run logs
+- dashboard and alerts
+
+Stage 6: Guarded Live Trader
+- optional and disabled by default
+- explicit real-money unlock
+- strict max loss, max position, and emergency stop controls
+- exchange connector isolated from lab logic
+```
+
+The current product is Stage 1. The next strategic target is Stage 2 and Stage 3, because those make the later Meta Bot meaningful.
+
+## Strategy personality model
+
+Bots should evolve from one-off hardcoded scripts into trader personalities.
+
+A personality should be a data object with decision traits:
+
+```text
+Bot Personality
+- id
+- name
+- role
+- description
+- aggression
+- patience
+- trend bias
+- dip bias
+- risk tolerance
+- take-profit bias
+- panic sensitivity
+- conviction scaling
+- overtrade tendency
+- max exposure
+- preferred market regimes
+- known weaknesses
+```
+
+The same market signal can produce different actions depending on personality. For example:
+
+- a trend hunter buys momentum
+- a dip buyer buys fear
+- a risk turtle waits or cuts exposure
+- a profit sniper exits sooner
+- a crash survivor moves toward cash
+
+The replay should explain decisions using the bot's personality, not generic action text.
+
+## Meta Bot model
+
+The Meta Bot is the platform's adaptive trader.
+
+It should not trade from one fixed personality. It should decide which strategy personality, or mix of personalities, is best for the current market.
+
+The Meta Bot can use:
+
+- recent trend strength
+- recent volatility
+- drawdown from recent peak
+- recovery strength
+- chop/noise level
+- current exposure
+- recent bot performance using past data only
+- regime confidence
+
+The Meta Bot cannot use:
+
+- future candles
+- future winning bot results
+- post-run knowledge
+- hidden scenario labels during a live/paper run
+
+### Hard switching
+
+Simple version:
+
+```text
+If market looks like strong uptrend -> use Trend Hunter
+If market looks like sharp dip -> use Dip Buyer
+If market looks like crash -> use Crash Survivor
+If market looks like chop -> use Profit Sniper or Risk Turtle
+```
+
+### Weighted strategy allocation
+
+Better version:
+
+```text
+Trend Hunter: 50%
+Risk Turtle: 30%
+Dip Buyer: 20%
+```
+
+The Meta Bot adjusts weights as market conditions change. This avoids whiplash from switching too often.
 
 ## Relationship to Jesse
 
@@ -81,13 +213,41 @@ Bitcoin AI Lab
    - scoring rules
    - replay schema
    - baseline comparisons
+   - batch rankings
 
-3. Jesse bridge layer
+3. Personality layer
+   - trait-weighted bots
+   - named archetypes
+   - strengths and weaknesses
+   - bot explanations
+
+4. Regime detection layer
+   - trend/chop/crash/recovery detection
+   - volatility scoring
+   - regime confidence
+   - no future knowledge
+
+5. Meta Bot layer
+   - strategy switching
+   - strategy weighting
+   - switch cooldowns
+   - adaptive risk control
+   - switch replay explanations
+
+6. Jesse bridge layer
    - later integration with Jesse backtests
    - historical candles
    - richer strategy files
    - real metrics
    - optional server mode
+
+7. Execution guard layer
+   - paper/live separation
+   - explicit live unlock
+   - position limits
+   - loss limits
+   - emergency stop
+   - exchange connector isolation
 ```
 
 ## Current bots
@@ -111,6 +271,36 @@ Buys sharp drops and sells sharp spikes. It can perform well in choppy markets b
 ### Random Bot
 
 A deliberately weak baseline. It buys and sells randomly so real strategies have an easy comparison target.
+
+## Future bot personalities
+
+### Trend Hunter
+
+Momentum specialist. Likes confirmed uptrends and lets winners run.
+
+### Dip Vulture
+
+Buys sharp drops when it thinks panic is overdone.
+
+### Risk Turtle
+
+Prioritizes survival, low drawdown, and smaller exposure.
+
+### Profit Sniper
+
+Takes smaller gains quickly and avoids overstaying trades.
+
+### Crash Survivor
+
+Cuts exposure fast when volatility and drawdown spike.
+
+### Accumulator
+
+Slowly builds BTC over time instead of making big all-in moves.
+
+### Chaos Monkey
+
+Random/stress-test bot used as a weak baseline.
 
 ## Current market scenarios
 
@@ -144,6 +334,7 @@ Current scoreboard:
 - trades
 - beat buy-and-hold flag
 - verdict
+- batch ranking
 
 Near-term additions:
 
@@ -153,6 +344,9 @@ Near-term additions:
 - win/loss by scenario
 - average result across many seeds
 - risk-adjusted score
+- best bot per regime
+- Meta Bot switch count
+- Meta Bot regime accuracy
 
 ## Replay model
 
@@ -179,9 +373,20 @@ This should evolve into a saved run format:
     "trades": 37,
     "beatHold": true
   },
+  "regimes": [],
+  "switches": [],
   "steps": []
 }
 ```
+
+For Meta Bot runs, replay should also include:
+
+- detected regime
+- confidence
+- active strategy or strategy weights
+- switch reason
+- cooldown status
+- risk override status
 
 ## v0.2 target
 
@@ -209,6 +414,33 @@ Make it a real bot lab instead of a single-run demo:
 
 ## v0.4 target
 
+Add Bot Personalities v1:
+
+- convert current bots into named archetypes
+- add trait summaries
+- add preferred market and weakness labels
+- make batch results read like personality comparisons
+
+## v0.5 target
+
+Add Market Regime Lab v1:
+
+- detect trend/chop/crash/recovery from past/current data
+- show regime label during runs
+- rank best bots by regime
+- avoid using future scenario labels in bot decisions
+
+## v0.6 target
+
+Add Meta Bot v1:
+
+- strategy switching or weighting
+- cooldown to avoid whiplash
+- switch replay explanations
+- compare Meta Bot against every specialist bot
+
+## v0.7 target
+
 Start Jesse bridge planning:
 
 - identify Jesse's safest backtest entry points
@@ -224,9 +456,10 @@ Start Jesse bridge planning:
 - Do not make live trading easy to trigger.
 - Do not build an Android APK before the lab loop is stronger.
 - Do not overbuild the UI before scoring and replay are useful.
+- Do not let the Meta Bot cheat by looking ahead.
 
-## Current best next move after v0.1 polish
+## Current best next move
 
-Add compare-all-bots mode.
+Add Bot Personalities v1, then Market Regime Lab v1.
 
-That is the fastest way to make the lab feel intelligent: one generated market, every bot runs against it, and the app ranks them by profit and risk.
+That is the clean path toward a fully automated trader platform because strategy switching only matters once the platform understands both bot personalities and market regimes.
