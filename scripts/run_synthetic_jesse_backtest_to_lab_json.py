@@ -152,7 +152,9 @@ def run_backtest(args: argparse.Namespace) -> Dict:
         run_silently=True,
         generate_equity_curve=True,
         generate_hyperparameters=True,
-        benchmark=True,
+        # Keep benchmark disabled. Benchmark output queries the candle DB, but this
+        # runner intentionally uses in-memory synthetic candles and no database import.
+        benchmark=False,
         fast_mode=False,
     )
 
@@ -176,7 +178,8 @@ def run_backtest(args: argparse.Namespace) -> Dict:
         bot_name="Jesse Synthetic Hold",
         warnings=[
             "Synthetic candle data. This proves Jesse engine integration, not market realism.",
-            "Minimal buy-and-hold strategy. Strategy quality is intentionally not the target of this bridge proof."
+            "Minimal buy-and-hold strategy. Strategy quality is intentionally not the target of this bridge proof.",
+            "Benchmark output is disabled because the synthetic runner does not import candles into Jesse's database."
         ],
     )
 
