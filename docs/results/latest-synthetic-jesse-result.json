@@ -1,0 +1,125 @@
+{
+  "version": "bridge-v0.1",
+  "engine": "jesse",
+  "mode": "backtest",
+  "source": "synthetic_jesse_backtest",
+  "sessionId": null,
+  "bot": "jesse-synthetic-hold",
+  "botName": "Jesse Synthetic Hold",
+  "settings": {
+    "exchange": "Sandbox",
+    "symbol": "BTC-USDT",
+    "timeframe": "1m",
+    "strategy": "SyntheticBuyAndHold",
+    "startingBalance": 10000,
+    "fee": 0.001,
+    "candles": 720,
+    "seed": 42,
+    "source": "synthetic-in-memory-candles"
+  },
+  "summary": {
+    "finalValue": 10226.223229501224,
+    "returnPct": 2.2622322950122427,
+    "maxDrawdownPct": 0.0,
+    "trades": 1,
+    "fees": 7.109491506084037,
+    "slippage": 0.0,
+    "beatHold": null,
+    "regime": "Historical",
+    "regimeConfidence": "N/A",
+    "winRate": 1.0,
+    "sharpeRatio": null,
+    "sortinoRatio": null
+  },
+  "equity": [],
+  "trades": [
+    {
+      "time": "2023-01-01T00:31:00Z",
+      "side": "buy",
+      "price": 68761.58785076729,
+      "qty": 0.05,
+      "fee": 7.109491506084037,
+      "pnl": 226.22322950122427,
+      "reason": "Jesse buy trade",
+      "raw": {
+        "id": "9124591a-110a-4f87-bde5-8a4bfe25c6c0",
+        "strategy_name": "SyntheticBuyAndHold",
+        "symbol": "BTC-USDT",
+        "exchange": "Sandbox",
+        "type": "long",
+        "entry_price": 68761.58785076729,
+        "exit_price": 73428.24227091346,
+        "qty": 0.05,
+        "opened_at": 1672533060000.0,
+        "closed_at": 1672574400000.0,
+        "fee": 7.109491506084037,
+        "size": 3438.0793925383646,
+        "PNL": 226.22322950122427,
+        "PNL_percentage": 6.5799303527485336,
+        "holding_period": 41340.0,
+        "orders": [
+          {
+            "id": "ad3cdfde-991d-4bd5-b9e6-606683854608",
+            "trade_id": "9124591a-110a-4f87-bde5-8a4bfe25c6c0",
+            "session_id": null,
+            "exchange_id": null,
+            "symbol": "BTC-USDT",
+            "side": "buy",
+            "type": "MARKET",
+            "qty": 0.05,
+            "filled_qty": 0.05,
+            "price": 68761.58785076729,
+            "status": "EXECUTED",
+            "created_at": 1672533060000.0,
+            "canceled_at": null,
+            "executed_at": 1672533060000.0,
+            "exchange": "Sandbox",
+            "reduce_only": false,
+            "submitted_via": null,
+            "jesse_submitted": true,
+            "order_exist_in_exchange": true,
+            "updated_at": null,
+            "session_mode": null
+          },
+          {
+            "id": "7e37e0b8-da01-40a4-9f9b-9de15e03e088",
+            "trade_id": "9124591a-110a-4f87-bde5-8a4bfe25c6c0",
+            "session_id": null,
+            "exchange_id": null,
+            "symbol": "BTC-USDT",
+            "side": "sell",
+            "type": "MARKET",
+            "qty": -0.05,
+            "filled_qty": -0.05,
+            "price": 73428.24227091346,
+            "status": "EXECUTED",
+            "created_at": 1672574400000.0,
+            "canceled_at": null,
+            "executed_at": 1672574400000.0,
+            "exchange": "Sandbox",
+            "reduce_only": true,
+            "submitted_via": null,
+            "jesse_submitted": true,
+            "order_exist_in_exchange": true,
+            "updated_at": null,
+            "session_mode": null
+          }
+        ]
+      }
+    }
+  ],
+  "replay": [
+    [
+      1,
+      68761.58785076729,
+      "BUY",
+      "Jesse buy trade",
+      null
+    ]
+  ],
+  "warnings": [
+    "Synthetic candle data. This proves Jesse engine integration, not market realism.",
+    "Minimal buy-and-hold strategy. Strategy quality is intentionally not the target of this bridge proof.",
+    "Benchmark output is disabled because the synthetic runner does not import candles into Jesse's database."
+  ]
+}
