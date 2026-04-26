@@ -1,0 +1,41 @@
+{
+  "version": "results-index-v1",
+  "latest": "results/latest-synthetic-jesse-result.json",
+  "historyCount": 1,
+  "results": [
+    {
+      "path": "results/history/synthetic-jesse-24948391209.json",
+      "url": "./results/history/synthetic-jesse-24948391209.json",
+      "runId": "24948391209",
+      "engine": "jesse",
+      "mode": "backtest-comparison",
+      "bot": "jesse-synthetic-late-hold",
+      "botName": "Jesse Late Hold",
+      "summary": {
+        "finalValue": 10650.57514933709,
+        "returnPct": 6.505751493370908,
+        "maxDrawdownPct": 0.0,
+        "trades": 1,
+        "fees": 6.685563514240015,
+        "slippage": 0.0,
+        "beatHold": null,
+        "regime": "Historical",
+        "regimeConfidence": "N/A",
+        "winRate": 1.0,
+        "sharpeRatio": null,
+        "sortinoRatio": null
+      },
+      "settings": {
+        "symbol": "BTC-USDT",
+        "timeframe": "1m",
+        "startingBalance": 10000.0,
+        "fee": 0.001,
+        "candles": 720,
+        "seed": 42,
+        "startPrice": 70000.0,
+        "strategyCount": 4,
+        "source": "synthetic-in-memory-candles"
+      }
+    }
+  ]
+}
