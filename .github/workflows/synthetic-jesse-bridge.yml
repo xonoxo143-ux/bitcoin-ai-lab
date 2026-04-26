@@ -2,6 +2,27 @@ name: Synthetic Jesse Bridge
 
 on:
   workflow_dispatch:
+    inputs:
+      seed:
+        description: "Synthetic market seed"
+        required: false
+        default: "42"
+      candles:
+        description: "Number of synthetic 1m candles"
+        required: false
+        default: "720"
+      start_price:
+        description: "Synthetic BTC start price"
+        required: false
+        default: "70000"
+      starting_balance:
+        description: "Starting balance"
+        required: false
+        default: "10000"
+      fee:
+        description: "Fee as decimal; 0.001 = 0.1%"
+        required: false
+        default: "0.001"
   push:
     paths:
       - "scripts/run_synthetic_jesse_backtest_to_lab_json.py"
@@ -39,7 +60,12 @@ jobs:
       - name: Run synthetic Jesse bridge
         run: |
           python scripts/run_synthetic_jesse_backtest_to_lab_json.py \
-            --output bitcoin_ai_lab_synthetic_jesse_result.json
+            --output bitcoin_ai_lab_synthetic_jesse_result.json \
+            --seed "${{ github.event.inputs.seed || '42' }}" \
+            --candles "${{ github.event.inputs.candles || '720' }}" \
+            --start-price "${{ github.event.inputs.start_price || '70000' }}" \
+            --starting-balance "${{ github.event.inputs.starting_balance || '10000' }}" \
+            --fee "${{ github.event.inputs.fee || '0.001' }}"
 
       - name: Show bridge result summary
         run: |
@@ -50,17 +76,48 @@ jobs:
           print('mode:', data.get('mode'))
           print('botName:', data.get('botName'))
           print('summary:', json.dumps(data.get('summary', {}), indent=2))
+          print('ranking:', json.dumps(data.get('ranking', [])[:5], indent=2))
           print('warnings:', data.get('warnings'))
           PY
 
-      - name: Publish latest result to GitHub Pages files
+      - name: Publish latest result and history to GitHub Pages files
         run: |
-          mkdir -p docs/results
+          mkdir -p docs/results/history
           cp bitcoin_ai_lab_synthetic_jesse_result.json docs/results/latest-synthetic-jesse-result.json
+          cp bitcoin_ai_lab_synthetic_jesse_result.json "docs/results/history/synthetic-jesse-${GITHUB_RUN_ID}.json"
+          python - <<'PY'
+          import glob, json, os
+          paths = sorted(glob.glob('docs/results/history/*.json'), reverse=True)[:50]
+          entries = []
+          for path in paths:
+              try:
+                  data = json.load(open(path, 'r', encoding='utf-8'))
+              except Exception as exc:
+                  entries.append({'path': path.replace('docs/', ''), 'error': str(exc)})
+                  continue
+              entries.append({
+                  'path': path.replace('docs/', ''),
+                  'url': './' + path.replace('docs/', ''),
+                  'runId': os.path.basename(path).replace('synthetic-jesse-', '').replace('.json', ''),
+                  'engine': data.get('engine'),
+                  'mode': data.get('mode'),
+                  'bot': data.get('bot'),
+                  'botName': data.get('botName'),
+                  'summary': data.get('summary', {}),
+                  'settings': data.get('settings', {}),
+              })
+          index = {
+              'version': 'results-index-v1',
+              'latest': 'results/latest-synthetic-jesse-result.json',
+              'historyCount': len(entries),
+              'results': entries,
+          }
+          json.dump(index, open('docs/results/index.json', 'w', encoding='utf-8'), indent=2)
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/results/latest-synthetic-jesse-result.json
-          git commit -m "Update latest synthetic Jesse result" || echo "No result changes to commit"
+          git add docs/results/latest-synthetic-jesse-result.json docs/results/history docs/results/index.json
+          git commit -m "Update synthetic Jesse result history" || echo "No result changes to commit"
           git push
 
       - name: Upload bridge JSON artifact
